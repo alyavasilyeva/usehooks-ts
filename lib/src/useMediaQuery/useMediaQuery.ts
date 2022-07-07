@@ -1,19 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+
+const getMatches = (query: string): boolean => {
+  // Prevents SSR issues
+  if (typeof window !== 'undefined') {
+    return window.matchMedia(query).matches
+  }
+  return false
+}
 
 function useMediaQuery(query: string): boolean {
-  const getMatches = (query: string): boolean => {
-    // Prevents SSR issues
-    if (typeof window !== 'undefined') {
-      return window.matchMedia(query).matches
-    }
-    return false
-  }
-
   const [matches, setMatches] = useState<boolean>(getMatches(query))
 
-  function handleChange() {
+  const handleChange = useCallback(() => {
     setMatches(getMatches(query))
-  }
+  }, [query])
 
   useEffect(() => {
     const matchMedia = window.matchMedia(query)
@@ -35,8 +35,7 @@ function useMediaQuery(query: string): boolean {
         matchMedia.removeEventListener('change', handleChange)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query])
+  }, [query, handleChange])
 
   return matches
 }
